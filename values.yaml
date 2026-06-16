@@ -2,7 +2,7 @@ services:
   user-service:
     name: user-service
 
-    replicaCount: 3
+    replicaCount: 1
 
     image:
       repo: mquang279/user-service
@@ -26,6 +26,34 @@ services:
 
       configMap:
         name: user-config
+
+  theater-service:
+    name: theater-service
+
+    replicaCount: 1
+
+    image:
+      repo: mquang279/theater-service
+      tag: v1
+      pullPolicy: Always
+
+    service:
+      type: ClusterIP
+      port: 80
+      targetPort: 8080
+
+    database:
+      host: theater-db
+      port: 5432
+      name: postgres
+
+      secret:
+        name: theater-secret
+        username: root
+        password: mypassword
+
+      configMap:
+        name: theater-config
 
   discovery-service:
     name: discovery-service
@@ -59,13 +87,34 @@ databases:
     resource:
       storage: 5Gi
 
-redis:
-  auth:
-    enabled: false
+  theater-db:
+    name: theater-db
+    image:
+      name: postgres
+      tag: 17-alpine
+      pullPolicy: IfNotPresent
+    secret:
+      name: theater-db-secret
+      username: root
+      password: mypassword
+    service:
+      port: 5432
+      targetPort: 5432
+    resource:
+      storage: 5Gi
 
 global:
   security:
     allowInsecureImages: true
+
+redis:
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    count: 1
+  replica:
+    replicaCount: 0
 
 kafka:
   image:
@@ -78,6 +127,12 @@ kafka:
 
   zookeeper:
     enabled: false
+
+  controller:
+    replicaCount: 1
+
+  broker:
+    replicaCount: 0
 
   listeners:
     client:

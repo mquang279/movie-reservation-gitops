@@ -1,4 +1,4 @@
-{{- range $name, $service := .Values.databases }}
+{{- range $name, $db := .Values.databases }}
 apiVersion: apps/v1
 kind: StatefulSet
 
@@ -22,12 +22,12 @@ spec:
 
     spec:
       containers:
-        - name: {{ $service.image.name }}
-          image: {{ $service.image.name }}:{{ $service.image.tag }}
-          imagePullPolicy: {{ $service.image.pullPolicy }}
+        - name: {{ $db.image.name }}
+          image: {{ $db.image.name }}:{{ $db.image.tag }}
+          imagePullPolicy: {{ $db.image.pullPolicy }}
 
           ports:
-            - containerPort: {{ $service.service.port }}
+            - containerPort: {{ $db.service.port }}
 
           env:
             - name: POSTGRES_DB
@@ -36,13 +36,13 @@ spec:
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ $service.secret.name }}
+                  name: {{ $db.secret.name }}
                   key: POSTGRES_USER
 
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ $service.secret.name }}
+                  name: {{ $db.secret.name }}
                   key: POSTGRES_PASSWORD
 
           volumeMounts:
@@ -59,16 +59,16 @@ spec:
 
         resources:
           requests:
-            storage: {{ $service.resource.storage }}
+            storage: {{ $db.resource.storage }}
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ $service.secret.name }}
+  name: {{ $db.secret.name }}
 type: Opaque
 stringData:
-  POSTGRES_USER: {{ $service.secret.username | quote }}
-  POSTGRES_PASSWORD: {{ $service.secret.password | quote }}
+  POSTGRES_USER: {{ $db.secret.username | quote }}
+  POSTGRES_PASSWORD: {{ $db.secret.password | quote }}
 ---
 apiVersion: v1
 kind: Service
@@ -83,7 +83,7 @@ spec:
     app: {{ $name }}
 
   ports:
-    - port: {{ $service.service.port}}
-      targetPort: {{ $service.service.targetPort}}
+    - port: {{ $db.service.port}}
+      targetPort: {{ $db.service.targetPort}}
 
 {{- end}}

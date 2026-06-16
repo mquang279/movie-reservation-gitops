@@ -1,0 +1,89 @@
+{{- range $name, $service := .Values.databases }}
+apiVersion: apps/v1
+kind: StatefulSet
+
+metadata:
+  name: {{ $name }}
+  labels:
+    app: {{ $name }}
+
+spec:
+  serviceName: {{ $name }}
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: {{ $name }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ $name }}
+
+    spec:
+      containers:
+        - name: {{ $service.image.name }}
+          image: {{ $service.image.name }}:{{ $service.image.tag }}
+          imagePullPolicy: {{ $service.image.pullPolicy }}
+
+          ports:
+            - containerPort: {{ $service.service.port }}
+
+          env:
+            - name: POSTGRES_DB
+              value: postgres
+
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.secret.name }}
+                  key: POSTGRES_USER
+
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.secret.name }}
+                  key: POSTGRES_PASSWORD
+
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+
+      spec:
+        accessModes:
+          - ReadWriteOnce
+
+        resources:
+          requests:
+            storage: {{ $service.resource.storage }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $service.secret.name }}
+type: Opaque
+stringData:
+  POSTGRES_USER: {{ $service.secret.username | quote }}
+  POSTGRES_PASSWORD: {{ $service.secret.password | quote }}
+---
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: {{ $name }}
+
+spec:
+  clusterIP: None
+
+  selector:
+    app: {{ $name }}
+
+  ports:
+    - port: {{ $service.service.port}}
+      targetPort: {{ $service.service.targetPort}}
+
+{{- end}}

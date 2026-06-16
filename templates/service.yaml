@@ -1,0 +1,93 @@
+{{- range $name, $service := .Values.services }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+spec:
+  replicas: {{ $service.replicaCount }}
+
+  selector:
+    matchLabels:
+      app: {{ $name }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ $name }}
+
+    spec:
+      containers:
+        - name: {{ $name }}
+          image: {{ $service.image.repo }}:{{ $service.image.tag }}
+          imagePullPolicy: {{ $service.image.pullPolicy }}
+
+          ports:
+          - containerPort: {{ $service.service.targetPort }}
+          
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ $service.database.configMap.name }}
+                  key: DB_HOST
+
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ $service.database.configMap.name }}
+                  key: DB_PORT
+
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ $service.database.configMap.name }}
+                  key: DB_NAME
+
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.database.secret.name }}
+                  key: DB_USERNAME
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.database.secret.name }}
+                  key: DB_PASSWORD
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+spec:
+  type: {{ $service.service.type }}
+  selector:
+    app: {{ $name }}
+  ports:
+    - port: {{ $service.service.port }}
+      targetPort: {{ $service.service.targetPort }}
+---
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: {{ $service.database.configMap.name }}
+
+data:
+  DB_HOST: {{ $service.database.host | quote }}
+  DB_PORT: {{ $service.database.port | quote }}
+  DB_NAME: {{ $service.database.name | quote }}
+---
+apiVersion: v1
+kind: Secret
+
+metadata:
+  name: {{ $service.database.secret.name }}
+
+type: Opaque
+
+stringData:
+  DB_USERNAME: {{ $service.database.secret.username | quote }}
+  DB_PASSWORD: {{ $service.database.secret.password | quote }}
+
+{{- end }}

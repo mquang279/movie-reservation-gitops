@@ -1,30 +1,31 @@
-userService:
-  name: user-service
+services:
+  user-service:
+    name: user-service
 
-  replicaCount: 3
+    replicaCount: 3
 
-  image:
-    repo: mquang279/user-service
-    tag: v1
-    pullPolicy: Always
+    image:
+      repo: mquang279/user-service
+      tag: v1
+      pullPolicy: Always
 
-  service:
-    type: ClusterIP
-    port: 80
-    targetPort: 8080
+    service:
+      type: ClusterIP
+      port: 80
+      targetPort: 8080
 
-  database:
-    host: user-db
-    port: 5432
-    name: postgres
+    database:
+      host: user-db
+      port: 5432
+      name: postgres
 
-    secret:
-      name: user-secret
-      username: root
-      password: mypassword
+      secret:
+        name: user-secret
+        username: root
+        password: mypassword
 
-    configMap:
-      name: user-config
+      configMap:
+        name: user-config
 
 discoveryService:
   name: discovery-service
@@ -42,7 +43,7 @@ discoveryService:
     targetPort: 8761
 
 databases:
-  user:
+  user-db:
     name: user-db
     image: 
       name: postgres
@@ -53,7 +54,6 @@ databases:
       username: root
       password: mypassword
     service:
-      type: ClusterIP
       port: 5432
       targetPort: 5432
     resource:

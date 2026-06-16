@@ -36,7 +36,7 @@ services:
       repo: mquang279/discovery-service
       tag: v1
       pullPolicy: Always
-    
+
     service:
       type: ClusterIP
       port: 8761
@@ -45,7 +45,7 @@ services:
 databases:
   user-db:
     name: user-db
-    image: 
+    image:
       name: postgres
       tag: 17-alpine
       pullPolicy: IfNotPresent
@@ -58,3 +58,39 @@ databases:
       targetPort: 5432
     resource:
       storage: 5Gi
+
+redis:
+  auth:
+    enabled: false
+
+global:
+  security:
+    allowInsecureImages: true
+
+kafka:
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/kafka
+    tag: "4.0.0-debian-12-r10"
+  clusterId: "abcdefghijklmnopqrstuv"
+  kraft:
+    enabled: true
+
+  zookeeper:
+    enabled: false
+
+  listeners:
+    client:
+      protocol: PLAINTEXT
+    controller:
+      protocol: PLAINTEXT
+    interbroker:
+      protocol: PLAINTEXT
+    external:
+      protocol: PLAINTEXT
+
+  auth:
+    enabled: false
+
+  tls:
+    enabled: false

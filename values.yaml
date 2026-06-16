@@ -27,20 +27,20 @@ services:
       configMap:
         name: user-config
 
-discoveryService:
-  name: discovery-service
+  discovery-service:
+    name: discovery-service
 
-  replicaCount: 1
+    replicaCount: 1
 
-  image:
-    repo: mquang279/discovery-service
-    tag: v1
-    pullPolicy: Always
-  
-  service:
-    type: ClusterIP
-    port: 8761
-    targetPort: 8761
+    image:
+      repo: mquang279/discovery-service
+      tag: v1
+      pullPolicy: Always
+    
+    service:
+      type: ClusterIP
+      port: 8761
+      targetPort: 8761
 
 databases:
   user-db:

@@ -24,6 +24,7 @@ spec:
           ports:
           - containerPort: {{ $service.service.targetPort }}
           
+          {{- if $service.database}}
           env:
             - name: DB_HOST
               valueFrom:
@@ -54,6 +55,7 @@ spec:
                 secretKeyRef:
                   name: {{ $service.database.secret.name }}
                   key: DB_PASSWORD
+            {{- end }}
 ---
 apiVersion: v1
 kind: Service
@@ -66,6 +68,8 @@ spec:
   ports:
     - port: {{ $service.service.port }}
       targetPort: {{ $service.service.targetPort }}
+
+{{- if $service.database }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -90,4 +94,5 @@ stringData:
   DB_USERNAME: {{ $service.database.secret.username | quote }}
   DB_PASSWORD: {{ $service.database.secret.password | quote }}
 
+{{- end }}
 {{- end }}
